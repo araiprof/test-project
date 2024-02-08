@@ -1,7 +1,2 @@
-Fabric
-Flask-SQLAlchemy
-coverage
 gunicorn
-# ecdsa
-# paramiko
-# pycrypto
+requests
