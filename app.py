@@ -4,9 +4,17 @@ app = Flask(__name__)
 
 
 @app.route('/')
-@app.route('/<name>')
-def hello(name=None):
+def homepage(name=None):
     return render_template('index.html', name=name)
+
+
+
+@app.route('/aiga')
+def aiga(name=None):
+    return render_template('aiga.html', name=name)
+
+
+
 
 
 # Default port:
