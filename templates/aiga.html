@@ -3,6 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>aiganym is best</title>
+    <script>
+        // Adding JavaScript function inside the head for checking the answer
+        function checkAnswer() {
+            var mood = document.getElementById("mood").value;
+            var resultText = "";
+            if (mood === "happy") {
+                resultText = "RIGHT ANSWER";
+            } else if (mood === "sad") {
+                resultText = "WRONG ANSWER";
+            }
+            document.getElementById("result").innerText = resultText;
+        }
+    </script>
 </head>
 <body>
 
@@ -10,11 +23,9 @@
 
 <strong>ZHANA KUN ZHANA MUMKINDIKTER</strong>
 
-
 <h2>Universities </h2>
 
 <h3>Ankara University</h3>
-
 
 <p>Pros:</p>
 <ul>
@@ -26,6 +37,16 @@
     <li>One of the best universities</li>
 </ul>
 
+<img src="/static/images/aiganym.jpeg" alt="Aiganym" width="200" height="250">
+
+<!-- Adding the new mood selection dropdown and button -->
+<label for="mood">Choose your mood:</label>
+<select id="mood">
+  <option value="happy">Happy</option>
+  <option value="sad">Sad</option>
+</select>
+<button onclick="checkAnswer()">Check Answer</button>
+<p id="result"></p>
 
 </body>
 </html>
