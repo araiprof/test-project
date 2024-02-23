@@ -15,7 +15,9 @@ def aiga(name=None):
 
 
 
-
+@app.route('/madi')
+def madi(name=None):
+    return render_template('madi.html', name=name)
 
 # Default port:
 if __name__ == '__main__':
