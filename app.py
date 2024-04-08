@@ -1,3 +1,5 @@
+import random
+
 from flask import Flask, render_template
 
 app = Flask(__name__)
@@ -69,14 +71,24 @@ def aiga(name=None):
 
 
 @app.route('/recipes')
-def recipe_listing(name=None):
+def recipe_listing():
+    return render_template('recipes.html', recipes=recipes)
     # Pass the list of recipes to the template
-    return render_template('recipes.html', recipes=recipes, name=name)
 
+@app.route('/randomrecipe')
+def randomizer ():
+    # Pass the list of recipes to the template
+    return render_template('randomrecipe.html', recipes=recipes)
 
 @app.route('/madi')
 def madi(name=None):
     return render_template('madi.html', name=name)
+
+@app.route('/getrandomrecipe')
+def get_random_recipe():
+    recipe = random.choice(recipes)
+    return render_template('recipe_snippet.html', recipe=recipe)
+
 
 
 if __name__ == '__main__':
