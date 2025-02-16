@@ -1,95 +1,71 @@
-import random
-
-from flask import Flask, render_template
+import os
+from flask import Flask, render_template, request, send_file
+from PIL import Image
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-# Example recipes
-recipes = [
-    {
-        'title': 'Authentic Italian Tiramisu',
-        'ingredients': [
-            '300 g Savoiardi (Ladyfingers) - about 30 cookies',
-            '500 g mascarpone cheese',
-            '4 medium eggs',
-            '100 g granulated sugar',
-            '300 ml espresso coffee',
-            '2 tablespoons Marsala Wine',
-            'Unsweetened cocoa powder for decoration'
-        ],
-        'instructions': [
-            'Make the coffee and add Marsala wine. Set aside to cool.',
-            'Separate egg whites from yolks. Whip egg whites to stiff peaks. Set aside.',
-            'Beat egg yolks with sugar until light and smooth.',
-            'Soften mascarpone cheese and combine with the yolk mixture.',
-            'Gently fold in whipped egg whites.',
-            'Dip ladyfingers in coffee and layer in a dish.',
-            'Alternate layers of mascarpone mixture and ladyfingers.',
-            'Finish with a layer of mascarpone, then dust with cocoa powder.',
-            'Refrigerate for at least 3 hours before serving.'
-        ]
-    },
-    {'title': 'Stuffed peppers',
-     'ingredients': [
-         '1/2 c. uncooked white or brown rice',
-         '2 tbsp. extra-virgin olive oil, plus more for drizzling',
-         '1 medium yellow onion, chopped',
-         '3 cloves garlic, finely chopped',
-         '2 tbsp. tomato paste',
-         '1 lb. ground beef',
-         '1 (14.5-oz.) can diced tomatoes',
-         '1 1/2 tsp. dried oregano',
-         'Kosher salt',
-         'Freshly ground black pepper',
-         '6 bell peppers, tops and cores removed',
-         '1 c. shredded Monterey jack',
-         'Chopped fresh parsley, for serving'
-     ],
-     'instructions':[
-         'Preheat oven to 400°. In a small saucepan, prepare rice according to package instructions.',
-         'Meanwhile, in a large skillet over medium heat, heat oil. Cook onion, stirring occasionally, ',
-         'until softened, about 7 minutes. Stir in garlic and tomato paste and cook, stirring, until fragrant, ',
-         'about 1 minute more. Add ground beef and cook, breaking up meat with a wooden spoon, until no longer pink, ',
-         'about 6 minutes. Drain excess fat.',
-         'Stir in rice and diced tomatoes; season with oregano, salt, and pepper. Let simmer, stirring occasionally, until liquid has reduced slightly, about 5 minutes.',
-         'Arrange peppers cut side up in a 13"x9" baking dish and drizzle with oil. Spoon beef mixture into each pepper. Top with cheese, then cover baking dish with foil.',
-         'Bake peppers until tender, about 35 minutes. Uncover and continue to bake until cheese is bubbly, about 10 minutes more.',
-         'Top with parsley before serving.'
-     ]
-     }
-]
+# Ensure upload folder exists
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
 
 
-@app.route('/')
-def homepage(name=None):
-    return render_template('index.html', name=name)
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route('/aiga')
-def aiga(name=None):
-    return render_template('aiga.html', name=name)
+@app.route('/', methods=['GET', 'POST'])
+def homepage():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            return 'No file part'
+        file = request.files['file']
+        if file.filename == '':
+            return 'No selected file'
 
+        if file and allowed_file(file.filename):
+            try:
+                # Secure the filename
+                filename = secure_filename(file.filename)
+                file_ext = filename.rsplit('.', 1)[1].lower()
 
-@app.route('/recipes')
-def recipe_listing():
-    return render_template('recipes.html', recipes=recipes)
-    # Pass the list of recipes to the template
+                if file_ext in ['jpg', 'jpeg']:
+                    # Save the JPEG file
+                    jpeg_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(jpeg_path)
 
-@app.route('/randomrecipe')
-def randomizer ():
-    # Pass the list of recipes to the template
-    return render_template('randomrecipe.html', recipes=recipes)
+                    # Convert to PNG
+                    png_filename = os.path.splitext(filename)[0] + '.png'
+                    png_path = os.path.join(app.config['UPLOAD_FOLDER'], png_filename)
 
-@app.route('/madi')
-def madi(name=None):
-    return render_template('madi.html', name=name)
+                    with Image.open(jpeg_path) as img:
+                        img.save(png_path, 'PNG')
 
-@app.route('/getrandomrecipe')
-def get_random_recipe():
-    recipe = random.choice(recipes)
-    return render_template('recipe_snippet.html', recipe=recipe)
+                    # Clean up the JPEG file
+                    os.remove(jpeg_path)
 
+                    # Verify PNG exists before sending
+                    if os.path.exists(png_path):
+                        return send_file(png_path, as_attachment=True)
+                    else:
+                        return 'Error: Converted file not found'
+
+                elif file_ext == 'png':
+                    # If it's already a PNG, just save and send it
+                    png_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(png_path)
+                    return send_file(png_path, as_attachment=True)
+
+            except Exception as e:
+                return f'Error processing file: {str(e)}'
+
+        return 'Invalid file type. Please upload a JPEG or PNG file.'
+
+    return render_template('index.html')
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

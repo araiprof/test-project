@@ -3,11 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arai's Webpage</title>
+    <title>JPEG to PNG Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-container {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .upload-container:hover {
+            border-color: #666;
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
-
-<h2>convert jpeg to png</h2>
-
+<h2>JPEG to PNG Converter</h2>
+<div class="upload-container">
+    <form method="POST" enctype="multipart/form-data">
+        <p>Select a JPEG file to convert to PNG</p>
+        <input type="file" name="file" accept=".jpg,.jpeg" required>
+        <br>
+        <button type="submit" class="submit-btn">Convert to PNG</button>
+    </form>
+</div>
 </body>
 </html>
